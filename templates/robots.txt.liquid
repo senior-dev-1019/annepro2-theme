@@ -1,0 +1,21 @@
+{% for group in robots.default_groups %}
+  {{- group.user_agent }}
+
+  {%- for rule in group.rules -%}
+    {%- unless rule.directive == 'Disallow' and rule.value == '/policies/' -%}
+      {{ rule }}
+    {%- endunless -%}
+  {%- endfor -%}
+
+  {%- if group.sitemap != blank -%}
+      {{ group.sitemap }}
+  {%- endif -%}
+{% endfor %}
+<!-- Liquid for default rules -->
+
+Sitemap: [https://annepro2.com/sitemap.xml]
+Sitemap: [https://annepro2.com/sitemap.rss]
+<!-- Liquid for default rules -->
+
+User-agent: discobot
+Disallow: /

@@ -1,0 +1,166 @@
+<link href="https://editorify.net/css/importify-review.min.css" rel="stylesheet" type="text/css" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+<script  src="https://editorify.net/js/iframe.js"></script>
+<script type="text/javascript">
+    var isLoadedWidgetAR = false;
+    var timerScrollIframeWidgetAR = null;
+    const EDITORIFY_IFRAME = 'iframe[class=edititorifyReviewsFrame]:not([src])';
+    function handleIframeWidget(){
+        let iframes = document.querySelectorAll(EDITORIFY_IFRAME);
+        if(iframes.length){
+            loadIframeWidget();
+            !isLoadedWidgetAR && document.addEventListener("scroll", loadIframeWidget, false);
+        }
+    }
+    function loadIframeWidget(){
+        if(timerScrollIframeWidgetAR){
+            clearTimeout(timerScrollIframeWidgetAR);
+        }
+        timerScrollIframeWidgetAR = setTimeout(function() {
+            let iframes = document.querySelectorAll(EDITORIFY_IFRAME);
+            let offsetTopNearest = iframes.length && iframes[0].offsetTop || 0;
+            let scrollTop = document.documentElement.scrollTop;
+            let heightScreen = document.documentElement.clientHeight;
+            let contentHeight = offsetTopNearest - heightScreen;
+            if (contentHeight <= scrollTop && !isLoadedWidgetAR){
+                isLoadedWidgetAR = true;
+                document.removeEventListener("scroll", loadIframeWidget, false);
+                renderIframe(iframes);
+            }
+        }, 100);
+    }
+    function renderIframe(iframes){
+        iframes.length && iframes.forEach((iframe, index) => {
+            let iframeSrc = iframe.getAttribute('data-ar-src');
+            if(parseInt(window.innerWidth)<769){
+                iframeSrc = iframeSrc+'&is_mobile=true'
+            }
+            iframe.setAttribute('src', iframeSrc || '');
+        });
+
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+        let iframes = document.querySelectorAll(EDITORIFY_IFRAME);
+        if(document.querySelector('#tabs #product-reviews-a')){
+            document.querySelector('#tabs #product-reviews-a').click()
+        }
+
+        renderIframe(iframes);
+        let formFrame = document.querySelector('.edititorifyReviewsFormFrame')
+        let formSrc = formFrame.getAttribute('data-src');
+        if(window.location.href.indexOf('#reviewrequest')>-1){
+            document.querySelector('.editorify-form-dialog').style.display = 'block';
+            formFrame.setAttribute('src', formSrc || '');
+
+        }
+    });
+</script>
+<script>
+    function insertAfter(referenceNode, newNode) {
+        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+    }
+    window.addEventListener('message', function(e) {
+        var nodes = document.querySelectorAll('.edititorifyReviewsFrame');
+        var iframe = nodes[nodes.length- 1];
+        let message = e.data;
+
+        if(window.location.href.indexOf('sunkisslover') > -1 && message.pcmPixelPostMessageEvent){
+            if(message.pcmPixelPostMessageEvent.ev && message.pcmPixelPostMessageEvent.ev == "PageView"){
+                let iframes = document.querySelectorAll(EDITORIFY_IFRAME);
+                renderIframe(iframes);
+
+            }
+
+        }
+        if(message.message == "review_created" && document.querySelector('.editorify-form-dialog')){
+            document.querySelector('.editorify-form-dialog').style.display = 'none';
+            iframe.src = iframe.src;
+        }
+
+        if(message.message == "resize"){
+            if(message.height > 0){
+
+                iframe.style.height = message.height + 'px';
+
+            }
+            setTimeout(function () {
+                if(document.querySelector('#editorify-reviews-widget') && !document.querySelector('#editorify-reviews-widget .edititorifyReviewsFrame')){
+                    document.querySelector('#editorify-reviews-widget').append(document.querySelector('.edititorifyReviewsFrame'))
+                }
+            },2000)
+
+
+        }
+        if(message.rateString && meta.page.pageType != 'home'){
+            if(document.querySelector('.editorify-reviews-count-new')){
+                document.querySelector('.editorify-reviews-count-new').remove()
+            }
+            var el = document.createElement( 'div');
+            el.innerHTML  = message.rateString
+            if(document.querySelector('.product-single__meta .product-single__title')){
+                insertAfter(document.querySelector('.product-single__meta .product-single__title'), el);
+            }else if(document.querySelector('.product-single__title')){
+                insertAfter(document.querySelector('.product-single__title'), el);
+            }else if(document.querySelector('.product-shop .product-name h2')){
+                insertAfter(document.querySelector('.product-shop .product-name h2'), el);
+            }else if(document.querySelector('.product_page_template  .tt-product-single-info .tt-title')){
+                insertAfter(document.querySelector('.product_page_template  .tt-product-single-info .tt-title'), el);
+            }else if(document.querySelector('#shopify-section-product-template .tt-product-single-info .tt-title')){
+                insertAfter(document.querySelector('#shopify-section-product-template .tt-product-single-info .tt-title'), el);
+            }else if(document.querySelector('#shopify-section-product-template .grid__item h1')){
+                insertAfter(document.querySelector('#shopify-section-product-template .grid__item h1'), el);
+            }else if(document.querySelector('.product-ditiles h1')){
+                insertAfter(document.querySelector('.product-ditiles h1'), el);
+            }else if(document.querySelector('.product-ditiles h1')){
+                insertAfter(document.querySelector('.product-ditiles h1'), el);
+            }else if(document.querySelector('h1.product_name')){
+                insertAfter(document.querySelector('h1.product_name'), el);
+            }else if(document.querySelector('h2.name')){
+                insertAfter(document.querySelector('h2.name'), el);
+            }else if(document.querySelector('h1.h2')){
+                insertAfter(document.querySelector('h1.h2'), el);
+            }else if(document.querySelector('.product-info__title h2')){
+                insertAfter(document.querySelector('.product-info__title h2'), el);
+            }else if(document.querySelector('h1.product__title')){
+                insertAfter(document.querySelector('h1.product__title'), el);
+            }else if(document.querySelector('h2.heading2')){
+                insertAfter(document.querySelector('h2.heading2'), el);
+            }else if(document.querySelector('h1[itemprop="name"]')){
+                insertAfter(document.querySelector('h1[itemprop="name"]'), el);
+            }else if(document.querySelector('h3.title30')){
+                insertAfter(document.querySelector('h3.title30'), el);
+            }else if(document.querySelector('h1.product-title')){
+                insertAfter(document.querySelector('h1.product-title'), el);
+            }else if(document.querySelector('.section-title h1')){
+                insertAfter(document.querySelector('.section-title h1'), el);
+            }else if(document.querySelector('.ProductMeta__Title.Heading.u-h2')){
+                insertAfter(document.querySelector('.ProductMeta__Title.Heading.u-h2'), el);
+            }else if(document.querySelector('.product_title.entry-title')){
+                insertAfter(document.querySelector('.product_title.entry-title'), el);
+            }else if(document.querySelector('.prod__title')){
+                insertAfter(document.querySelector('.prod__title'), el);
+            }else if(document.querySelector('.product-page-info__title h1')){
+                insertAfter(document.querySelector('.product-page-info__title h1'), el);
+            }else if(document.querySelector('.product-meta__title')){
+                insertAfter(document.querySelector('.product-meta__title'), el);
+            }
+        }
+        if(message.styleSheet){
+            head = document.head || document.getElementsByTagName('head')[0],
+                style = document.createElement('style');
+            style.type = 'text/css';
+            style.appendChild(document.createTextNode(message.styleSheet));
+            head.appendChild(style);
+        }
+        if(message.fontPath){
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            let tmp = link.cloneNode(true);
+            tmp.href = message.fontPath;
+            document.getElementsByTagName('head')[0].appendChild(tmp);
+        }
+
+    } , false);
+
+
+</script>

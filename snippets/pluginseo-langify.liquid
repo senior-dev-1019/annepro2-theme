@@ -1,0 +1,66 @@
+{%- comment -%}
+  ----------------------------------------------------------------------------------
+   Plug in SEO Plus for Shopify
+
+   Copyright (c) 2020 SureSwift Capital, Inc.
+
+   This file is subject to the license at https://www.pluginseo.com/eula
+  ----------------------------------------------------------------------------------
+{%- endcomment -%}
+
+{%- assign hasLangify = false -%}
+
+{%- capture langifyGlobal -%}{%- include 'ly-global' -%}{%- endcapture -%}
+{%- unless langifyGlobal contains "Liquid error: Could not find asset snippets/ly-global.liquid" -%}
+  {%- assign hasLangify = true -%}
+{%- endunless -%}
+
+{%- if hasLangify == true -%}
+  {%- for language in shop.metafields.languages -%}
+    {%- assign langKey = language | first -%}
+    {%- if langKey != "default" -%}
+      {%- assign langValue = language | last -%}
+      {%- assign current_url = nil -%}
+      {%- case rootTemplate -%}
+        {%- when 'index' -%}
+          {%- assign current_url = '' -%}
+        {%- when 'page' -%}
+          {%- assign current_url = page.url -%}
+        {%- when 'blog' -%}
+          {%- assign current_url = blog.url -%}
+        {%- when 'article' -%}
+          {%- assign current_url = article.url -%}
+        {%- when 'collection' -%}
+          {%- assign current_url = collection.url -%}
+        {%- when 'product' -%}
+          {%- assign current_url = product.url -%}
+      {%- endcase -%}
+      {%- if current_url != nil -%}
+        {%- assign splitDomains = shop.metafields.language_domains[langKey] | split: ',' -%}
+        {%- assign languageDomain = product.url -%}
+      {%- endif -%}
+    {%- endif -%}
+
+  {%- endfor -%}
+
+  {% if request.host %}
+    {% assign host = request.host %}
+    {% assign domains = shop.metafields.language_domains %}
+    {% for domain in domains %}
+      {% assign key = domain | first %}
+      {% assign value = domain | last | split: ',' %}
+      {% if value contains host %}
+        {% assign detectedLanguage = key %}
+      {% endif %}
+    {% endfor %}
+
+    {% if detectedLanguage == nil %}
+      {% assign detectedLanguage = shop.metafields["languages"]["default"] %}
+    {% endif %}
+  {% else %}
+    {% assign detectedLanguage = cart.attributes["language"] %}
+    {% if detectedLanguage == nil %}
+      {% assign detectedLanguage = shop.metafields["languages"]["default"] %}
+    {% endif %}
+  {% endif %}
+{% endif %}

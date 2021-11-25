@@ -1,0 +1,173 @@
+{%- comment -%}
+  ----------------------------------------------------------------------------------
+   Plug in SEO Plus for Shopify
+
+   Copyright (c) 2020 SureSwift Capital, Inc.
+
+   This file is subject to the license at https://www.pluginseo.com/eula
+  ----------------------------------------------------------------------------------
+{%- endcomment -%}
+
+{%- assign pTF = 's' -%}
+{%- assign defaultPageTitle = [pageUnderscoreTitle] | escape -%}
+
+{% comment %} object can assign a specific SEO description {% endcomment %} 
+{%- assign shopifyHasTitleAndSeoOverride = false -%}
+
+{%- if hasLangify == true and detectedLanguage != shop.metafields["languages"]["default"] -%}
+  {%- assign pTF = pTF | append: '-lf' -%}
+  {%- if rootTemplate == 'index' -%}
+    <title>[Homepage page title]</title>
+  {%- elsif rootTemplate == '404' -%}
+    <title>[404 page title]</title>
+  {%- elsif rootTemplate == 'search' -%}
+    <title>[Search page title]</title>
+  {%- else -%}
+    {%- assign pTF = pTF | append: '-ap' -%}
+    <title>{{ langify_title | strip_html | strip_newlines }}</title>
+  {%- endif -%}
+{%- else -%}
+  {%- case rootTemplate -%}
+    {%- when 'index' -%}
+      {%- assign shopifyHasTitleAndSeoOverride = true -%}
+      {%- assign defaultPageTitle = shop.name | escape -%}
+      {%- assign pageTitleTemplate = settings.pluginseo_pageTitleIndexTemplate -%}
+      {%- assign pTFTemp = '-te_ix' -%}
+    {%- when 'page' -%}
+      {%- assign shopifyHasTitleAndSeoOverride = true -%}
+      {%- assign defaultPageTitle = page.title | escape -%}
+      {%- assign pageTitleTemplate = settings.pluginseo_pageTitlePageTemplate -%}
+      {%- assign pTFTemp = '-te_pg' -%}
+    {%- when 'search' -%}
+      {%- if search.terms == empty or search.terms == nil -%}
+        {%- assign defaultPageTitle = 'Search' -%}
+      {%- else -%}
+        {%- assign defaultPageTitle = search.terms | escape -%}
+      {%- endif -%}
+      {%- assign pageTitleTemplate = settings.pluginseo_pageTitleSearchTemplate -%}
+      {%- assign pTFTemp = '-te_se' -%}
+    {%- when 'product' -%}
+      {%- assign shopifyHasTitleAndSeoOverride = true -%}
+      {%- assign defaultPageTitle = product.title | escape -%}
+      {%- assign pageTitleTemplate = settings.pluginseo_pageTitleProductTemplate -%}
+      {%- assign pTFTemp = '-te_pr' -%}
+    {%- when 'collection' -%}
+      {%- if collection.handle == 'all' -%}
+        {%- assign pageTitleTemplate = settings.pluginseo_pageTitleCatalogTemplate -%}
+      {%- else -%}
+        {%- assign shopifyHasTitleAndSeoOverride = true -%}
+        {%- assign defaultPageTitle = collection.title | escape -%}
+        {%- assign pageTitleTemplate = settings.pluginseo_pageTitleCollectionTemplate -%}
+      {%- endif -%}
+      {%- assign pTFTemp = '-te_co' -%}
+    {%- when 'blog' -%}
+      {%- assign shopifyHasTitleAndSeoOverride = true -%}
+      {%- assign defaultPageTitle = blog.title | escape -%}
+      {%- assign pageTitleTemplate = settings.pluginseo_pageTitleBlogTemplate -%}
+      {%- assign pTFTemp = '-te_bl' -%}
+    {%- when 'article' -%}
+      {%- assign shopifyHasTitleAndSeoOverride = true -%}
+      {%- assign defaultPageTitle = article.title | escape -%}
+      {%- assign pageTitleTemplate = settings.pluginseo_pageTitleArticleTemplate -%}
+      {%- assign pTFTemp = '-te_ar' -%}
+    {%- when '404' -%}
+      {%- assign pageTitleTemplate = settings.pluginseo_pageTitle404Template -%}
+      {%- assign pTFTemp = '-te_44' -%}
+  {%- endcase -%}
+
+  {%- if pageTitleTemplate == blank or pageTitleTemplate == nil -%}
+    {%- assign pageTitleTemplate = settings.pluginseo_pageTitleDefaultTemplate -%}
+    {%- assign pTFTemp = '-te_df' -%}
+  {%- endif -%}
+
+  {%- capture escapedPageUnderscoreTitle -%}{{ [pageUnderscoreTitle] | escape }}{%- endcapture -%}
+  {%- if shopifyHasTitleAndSeoOverride == true -%}
+    {% comment %} Check if the SEO override is different from object title {% endcomment %}
+    {%- capture defaultPageTitleForCompare -%}{{ defaultPageTitle | truncate: 70, "" | strip_html }}{%- endcapture -%}
+
+    {%- if escapedPageUnderscoreTitle != defaultPageTitleForCompare -%}
+      {%- assign pageTitleToParse = escapedPageUnderscoreTitle -%}
+    {%- endif -%}
+  {%- else -%}
+      {%- assign pageTitleToParse = escapedPageUnderscoreTitle -%}
+  {%- endif -%}
+
+  {%- if pageTitleToParse == blank or pageTitleToParse == nil -%}
+    {%- assign pageTitleToParse = defaultPageTitle -%}
+    {%- assign pageTitleIsDefault = true -%}
+  {%- endif -%}
+
+  <!-- default to true -->
+  {%- assign pageTitleTruncateApplicable = true -%}
+  {%- assign pageTitleTruncatePages = "collection,product,page,blog,article" | split:"," -%}
+  {%- if pageTitleTruncatePages contains rootTemplate -%}
+    <!-- Contain template-->
+    {%- assign pageTitleTruncateSuffix = rootTemplate | capitalize | append: "s" -%}
+    {%- assign pageTitleTruncateField = "pluginseo_pageTitleTruncateEnableFor" | append: pageTitleTruncateSuffix -%}
+    <!-- setting name: {{pageTitleTruncateField}}-->
+    <!-- setting value: {{settings[pageTitleTruncateField]}} -->
+    {%- assign pageTitleTruncateApplicable = settings[pageTitleTruncateField] -%}
+  {%- endif -%}
+
+  <!-- pageTitleTemplate: {{pageTitleTemplate}} -->
+  <!-- pageTitleToParse": {{pageTitleToParse}} -->
+  <!-- pageTitleTruncateApplicable: {{pageTitleTruncateApplicable}} -->
+
+  <!-- pluginseo_pageTitleTemplateApplyToAll: {{settings.pluginseo_pageTitleTemplateApplyToAll}} -->
+  <!-- pageTitleTruncateApplicable: {{pageTitleTruncateApplicable}} -->
+
+  {%- if settings.pluginseo_pageTitleTemplateApplyToAll == true and pageTitleTruncateApplicable == true -%}
+    <!-- Custom page title: Yes -->
+    {%- if pageTitleTemplate != blank %}
+      {%- assign pTF = pTF | append: pTFTemp -%}
+      {%- capture pageTitle -%}{% include 'pluginseo-parse' template:pageTitleTemplate %}{%- endcapture -%}
+    {%- elsif pageTitleToParse != blank -%}
+      {%- assign pTF = pTF | append: '-me' -%}
+      {%- capture pageTitle -%}{% include 'pluginseo-parse' template:pageTitleToParse %}{%- endcapture -%}
+    {%- endif -%}
+  {%- else -%}
+    <!-- Custom page title: No -->
+    {%- if pageTitleIsDefault != true and shopifyHasTitleAndSeoOverride == true %}
+      {%- assign pTF = pTF | append: '-me' -%}
+      {%- capture pageTitle -%}{% include 'pluginseo-parse' template:pageTitleToParse %}{%- endcapture -%}
+    {%- elsif pageTitleTemplate != blank and pageTitleTruncateApplicable == true -%}
+      {%- assign pTF = pTF | append: pTFTemp -%}
+      {%- capture pageTitle -%}{% include 'pluginseo-parse' template:pageTitleTemplate %}{%- endcapture -%}
+    {%- else -%}
+      {%- assign pTF = pTF | append: '-me' -%}
+      {%- capture pageTitle -%}{% include 'pluginseo-parse' template:pageTitleToParse %}{%- endcapture -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- if settings.pluginseo_pageTitleEnableAppender == true -%}
+    {%- capture pageTitleAppend -%}{% include 'pluginseo-parse' template:settings.pluginseo_pageTitleAppenderTemplate %}{%- endcapture -%}
+    {%- capture pageTitleWithAppendage -%}{{ pageTitle }} {{ pageTitleAppend }}{%- endcapture -%}
+
+    {%- assign pluginseo_pageTitleTruncateChars = settings.pluginseo_pageTitleTruncateChars | plus: 0 -%}
+    {%- if pluginseo_pageTitleTruncateChars == 0 -%}
+      {%- assign pluginseo_pageTitleTruncateChars = 999 -%}
+    {%- endif -%}
+    {%- assign pluginseo_pageTitleAppenderTargetLength = settings.pluginseo_pageTitleAppenderTargetLength | plus: 0 -%}
+    {%- assign pageTitleLength = pageTitle | size | plus: 0 -%}
+    {%- assign pageTitleWithAppendageLength = pageTitleWithAppendage | size | plus: 0 -%}
+
+    {%- if pageTitleLength < pluginseo_pageTitleAppenderTargetLength and pageTitleWithAppendageLength < pluginseo_pageTitleTruncateChars -%}
+      {%- assign pTF = pTF | append: '-ap' -%}
+      {%- capture pageTitle -%}{{ pageTitleWithAppendage }}{%- endcapture -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- if settings.pluginseo_pageTitleTruncateChars != blank -%}
+    {%- assign finalPageTitleLength = pageTitle | size | plus: 0 -%}
+    {%- assign pluginseo_pageTitleTruncateChars = settings.pluginseo_pageTitleTruncateChars | plus: 0 -%}
+    {%- if pluginseo_pageTitleTruncateChars == 0 -%}
+      {%- assign pluginseo_pageTitleTruncateChars = 999 -%}
+    {%- endif -%}
+
+    {%- if finalPageTitleLength > pluginseo_pageTitleTruncateChars -%}
+      {%- assign pTF = pTF | append: '-tr' -%}
+    {%- endif -%}
+    {%- capture pageTitle -%}{{ pageTitle | truncate: pluginseo_pageTitleTruncateChars, "" }}{%- endcapture -%}
+  {%- endif -%}
+  <title>{{ pageTitle | strip_html | strip_newlines }}</title>
+{%- endif -%}
